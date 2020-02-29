@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>TODO list</title>
+    <link rel="stylesheet" type="text/css" href="css/tableStyle.css">
+</head>
+
+<body>
+<!-- Optional JavaScript -->
+<!-- jQuery,  Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+
+<!--changed status of done item, when changed status checkbox -->
+<script>
+    function changeDoneItem(id) {
+        var doneChecked = document.getElementById(id).checked;
+        $.ajax("./items", {
+            type: "post",
+            data: JSON.stringify({
+                id: id,
+                done: doneChecked
+            }),
+            dataType: "json"
+        }).done(function (data) {
+            if (data.success === true) {
+                alert("Item with id=" + data.id + " status of done changed to " + data.done + ".");
+            }
+            if (data.success === false) {
+                alert("Error changed status of done");
+            }
+        })
+    }
+</script>
+
+<!--get items from db and populate table-->
+<script>
+    function getTodoList(typeOfDone) {
+        var urlGetQuery = './items?done=' + typeOfDone;
+        $.ajax(urlGetQuery).done(function (data) {
+            var refreshBody = '';
+            var json = JSON.parse(data);
+            for (item in json) {
+                var idRow = json[item].id.toString();
+                refreshBody += '<tr><td>' + idRow + '</td><td>' + json[item].description
+                    + '</td><td>' + json[item].date.year + '-' + json[item].date.monthValue + '-'
+                    + json[item].date.dayOfMonth + '</td><td>';
+                if (json[item].done.toString() === 'true') {
+                    refreshBody += '<input type="checkbox" id="' + idRow + '" onchange="changeDoneItem(this.id)" checked>' + '</td>';
+                } else {
+                    refreshBody += '<input type="checkbox" id="' + idRow + '" onchange="changeDoneItem(this.id)">' + '</td>';
+                }
+                refreshBody += '</tr>';
+            }
+            $("#todo_list").html(refreshBody);
+        })
+    }
+</script>
+
+<!--call function getTodoList with parameter, which take from group input type radio (name = typeOfGetItem)-->
+<script>
+    function changeGetAllItems(id) {
+        if (id === "allItems") {
+            getTodoList("all");
+        }
+        if (id === "doneItems") {
+            getTodoList("true");
+        }
+        if (id === "undoneItems") {
+            getTodoList("false");
+        }
+    }
+</script>
+
+<!--download all items, when page is opened-->
+<script>
+    $(
+        getTodoList("all")
+    )
+</script>
+
+<!--add new item-->
+<script>
+    function addItem() {
+        var desc = $('#newItemDescription').val();
+        if (!/[^ ]/.test(desc)) {
+            alert("Input description of item");
+            return;
+        }
+        $.ajax("./save", {
+            type: "post",
+            data: JSON.stringify({
+                description: desc
+            }),
+            dataType: "json"
+        }).done(function (data) {
+            if (data.success === true) {
+                alert("Item was added");
+                alert(data.created);
+                var rowToAdd = '<tr><td>' + data.id + '</td><td>' + data.description + '</td><td>'
+                    + data.created + '</td><td>'
+                    + '<input type="checkbox" id="' + data.id + '" onchange="changeDoneItem(this.id)">' + '</td></tr>';
+                $("#todo_list").append(rowToAdd);
+            }
+            if (data.success === false) {
+                alert("Error adding item");
+            }
+        })
+    }
+</script>
+
+<div class="container">
+    <h3>TODO list - simple list for saving, viewing and editing item status.</h3>
+    <br>
+    <h5>
+        <form>
+            <input type="text" id="newItemDescription" required pattern="^[a-zA-Z]+$">
+            <input type="button" value="Add new item" onclick="addItem()">
+        </form>
+    </h5>
+    <h5>Показать список:
+        <input type="radio" name="typeOfGetItem" id="allItems" onchange="changeGetAllItems(this.id)">всех задач |
+        <input type="radio" name="typeOfGetItem" id="doneItems" onchange="changeGetAllItems(this.id)">сделанных задач |
+        <input type="radio" name="typeOfGetItem" id="undoneItems" onchange="changeGetAllItems(this.id)">не сделанных
+        задач.
+    </h5>
+    <div class="row pt-3">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Item-id</th>
+                <th>Description of item</th>
+                <th>Date of created</th>
+                <th>Done</th>
+            </tr>
+            </thead>
+            <tbody id="todo_list">
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
