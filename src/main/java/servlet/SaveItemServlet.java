@@ -23,7 +23,6 @@ import java.time.LocalDate;
 public class SaveItemServlet extends HttpServlet {
     private final InteractionWithDB database = InteractionWithDB.getInstance();
     private static final Logger LOG = LogManager.getLogger(GetItemsServlet.class.getName());
-
     /**
      * сохраняет в бд переданную задачу(генерирует id для неё и сохраняет дату поступления)
      * и возвращает результат выполнения с информацией о id и дате поступления задачи
@@ -43,19 +42,19 @@ public class SaveItemServlet extends HttpServlet {
         String desc = jsonNode.get("description").asText();
         ObjectNode responseNode = objectMapper.createObjectNode();
         LocalDate localDate = LocalDate.now();
-        Item saveItem = new Item(desc, localDate, false);
+        Item saveItem = new Item(desc, localDate, "undone");
         if (database.saveItem(saveItem)) {
             responseNode.put("success", true)
                     .put("id", saveItem.getId())
                     .put("description", desc)
                     .put("created", localDate.toString())
-                    .put("done", false);
+                    .put("done", "undone");
         } else {
             responseNode.put("success", false);
         }
+        LOG.info("Сохранена задача: " + saveItem.toString());
         PrintWriter writer = response.getWriter();
         writer.append(objectMapper.writeValueAsString(responseNode));
         writer.flush();
-
     }
 }

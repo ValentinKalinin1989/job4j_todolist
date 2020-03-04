@@ -22,8 +22,6 @@ public class InteractionWithDB {
     private InteractionWithDB() {
     }
 
-    ;
-
     /**
      * возвращает экземпляр объекта
      *
@@ -79,25 +77,25 @@ public class InteractionWithDB {
     /**
      * получает список задач в зависимости от статуса выполнения
      *
-     * @param typeOfDone - статус выполнения задач
+     * @param typeOfDone - статус выполнения задачи (done - если выполнена, undone - если нет)
      * @return список задач с соответствующим статусом
      */
-    public List<Item> getItemsWithTypeOfDone(boolean typeOfDone) {
+    public List<Item> getItemsWithTypeOfDone(String typeOfDone) {
         List<Item> itemList = null;
         try (Session session = createSessionFactory().getCurrentSession()) {
             session.beginTransaction();
-            String query = "FROM Item WHERE done = " + typeOfDone;
-            itemList = session.createQuery(query).getResultList();
+            String query = "FROM Item i WHERE i.done = :done";
+            itemList = session.createQuery(query).setParameter("done", typeOfDone).getResultList();
         }
         return itemList;
     }
 
     /**
      * @param id         - id задачи в базе данных
-     * @param typeOfDone - статус выполнения задачи
+     * @param typeOfDone - статус выполнения задачи (done - если выполнена, undone - если нет)
      * @return - результат изменеия статуса задачи
      */
-    public boolean setDoneItem(int id, boolean typeOfDone) {
+    public boolean setDoneItem(int id, String typeOfDone) {
         boolean result = false;
         try (Session session = createSessionFactory().getCurrentSession()) {
             session.beginTransaction();

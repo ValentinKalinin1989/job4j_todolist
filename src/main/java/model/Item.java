@@ -29,25 +29,23 @@ public class Item {
     private LocalDate date;
     /**
      * значение выполнения задания,
-     * если задача выполнена то значение рано true
+     * done - если выполнена, undone - если нет
      */
     @Column(name = "done")
-    private boolean done;
-
+    private String done;
     /**
      * констркуктор без аргументов для JPA
      */
     public Item() {
     }
-
     /**
      * конструктор
      *
      * @param description - описание задачи
      * @param date        - дата создания задачи
-     * @param done        - статус выполнения задачи (true - если выполнена)
+     * @param done        - статус выполнения задачи (done - если выполнена, undone - если нет)
      */
-    public Item(String description, LocalDate date, boolean done) {
+    public Item(String description, LocalDate date, String done) {
         this.description = description;
         this.date = date;
         this.done = done;
@@ -77,11 +75,11 @@ public class Item {
         this.date = date;
     }
 
-    public boolean isDone() {
+    public String isDone() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void setDone(String done) {
         this.done = done;
     }
 
@@ -108,5 +106,21 @@ public class Item {
                 ", date=" + date +
                 ", done=" + done +
                 '}';
+    }
+
+    /**
+     * Создает строку с разметкой json-объекта
+     * вывода для id = 1, description = "Find framework for UI", date = "2020-02-25", done = "undone" представлен ниже
+     * {"id":1,"description":"Find framework for UI","date":"2020-02-25","done":"undone"}
+     *
+     * @return строка c json разметкой
+     */
+    public String toJsonString() {
+        return "{" +
+                "\"id\"" + ":" + id + "," +
+                "\"description\"" + ":" + "\"" + description + "\"," +
+                "\"date\"" + ":" + "\"" + date + "\"," +
+                "\"done\"" + ":" + "\"" + done + "\"" +
+                "}";
     }
 }

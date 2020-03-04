@@ -25,7 +25,6 @@ import java.util.List;
 public class GetItemsServlet extends HttpServlet {
     private final InteractionWithDB database = InteractionWithDB.getInstance();
     private static final Logger LOG = LogManager.getLogger(GetItemsServlet.class.getName());
-
     /**
      * возвращает список задач с определенным статусом в виде json-объекта
      *
@@ -38,20 +37,30 @@ public class GetItemsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Item> itemList = new ArrayList<>();
         String done = request.getParameter("done");
-        if (done.equals("true")) {
-            itemList = database.getItemsWithTypeOfDone(true);
-        } else if (done.equals("false")) {
-            itemList = database.getItemsWithTypeOfDone(false);
+        if (done.equals("done")) {
+            itemList = database.getItemsWithTypeOfDone("done");
+        } else if (done.equals("undone")) {
+            itemList = database.getItemsWithTypeOfDone("undone");
         } else {
             itemList = database.getAllItem();
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonFromList = objectMapper.writeValueAsString(itemList);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("[");
+        int lengthListItems = itemList.size();
+        for (int i = 0; i < lengthListItems; i++) {
+            stringBuilder.append(itemList.get(i).toJsonString());
+            if (i == lengthListItems - 1) {
+                break;
+            }
+            stringBuilder.append(",");
+        }
+        stringBuilder.append("]");
+        LOG.info("Список задач: " + itemList.toString());
+        LOG.info("Сгенерированная json-строка: " + stringBuilder.toString());
         PrintWriter writer = response.getWriter();
-        writer.println(jsonFromList);
-        writer.close();
+        writer.println(stringBuilder);
+        writer.flush();
     }
-
     /**
      * меняет статус задачи и возвращает результат выполнения операции
      *
@@ -68,15 +77,15 @@ public class GetItemsServlet extends HttpServlet {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(stringBuilder.toString());
         int id = jsonNode.get("id").asInt();
-        boolean done = jsonNode.get("done").asBoolean();
+        String done = jsonNode.get("done").asText();
         LOG.info("id=" + id + " done=" + done);
-        System.out.println("id=" + id + "  done=" + done);
-
         ObjectNode responseNode = objectMapper.createObjectNode();
         if (database.setDoneItem(id, done)) {
             responseNode.put("success", true).put("id", id).put("done", done);
+            LOG.info("Success to change done/");
         } else {
             responseNode.put("success", false);
+            LOG.info("Error to change done/");
         }
         PrintWriter writer = response.getWriter();
         writer.append(objectMapper.writeValueAsString(responseNode));
