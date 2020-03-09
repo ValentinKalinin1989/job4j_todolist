@@ -5,6 +5,6 @@
 а так же позволяет добавлять новые задачи. Возможно просматривать список выполненых и невыолненных задач,
 а так же ставить отметку о выполнении задачи. Для обновления данных на странице используются ajax-запросы.
 Страница имеет следующий вид:</h5>
-<img src="https://raw.githubusercontent.com/ValentinKalinin1989/job4j_todolist/master/images/hall.png">
+<img src="https://github.com/ValentinKalinin1989/job4j_todolist/blob/master/images/index.png">
 <h5>После пометки задачи, как выполненой, выходит простое сообщение о изменении статуса задачи.</h5>
-<img src=https://raw.githubusercontent.com/ValentinKalinin1989/job4j_todolist/master/images/hall.png">
+<img src="https://github.com/ValentinKalinin1989/job4j_todolist/blob/master/images/alert.png">
