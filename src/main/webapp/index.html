@@ -59,7 +59,6 @@
         var urlGetQuery = './items?done=' + typeOfDone;
         $.ajax(urlGetQuery).done(function (data) {
             var refreshBody = '';
-            alert(data);
             var json = JSON.parse(data);
             for (item in json) {
                 var idRow = json[item].id.toString();
